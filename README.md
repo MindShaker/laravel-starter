@@ -1,4 +1,6 @@
-# UIkit / Breeze starter template for Laravel 11
+# Laravel Starter with Uikit
+
+**Atention:** This package was updated to not only install Uikit scaffolding but also allow to keep tailwind and Alpine JS. 
 
 This package installs the starter kit "[Laravel Breeze](https://laravel.com/docs/11.x/starter-kits#laravel-breeze-installation)" and styles it with [UiKit](https://getuikit.com/) and it removes unnecessary files from Breeze and tailwind (See the full list of deleted / changed files below).
 
@@ -26,10 +28,14 @@ cd example-app
 ```
 composer require mindshaker/laravel-uikit
 ```
-
-2. Run the artisan command to install Breeze and UIKit (This will delete / change files. Please see full list below.)
+OR
 ```
-php artisan uikit:install
+composer require mindshaker/laravel-starter
+```
+
+2. Run the artisan command to install Breeze and UIKit (This will delete / change files. Please see full list below.) Or keep tailwind and insert a default design system
+```
+php artisan starter:install
 ```
 
 3. Finish the Breeze installation

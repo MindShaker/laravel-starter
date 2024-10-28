@@ -28,7 +28,7 @@ class LaravelStarterServiceProvider extends ServiceProvider
     {
         // Default settings that we want to apply to all our projects
         Schema::defaultStringLength(191);
-        Paginator::defaultView('pagination.uikit');
+        //Paginator::defaultView('pagination.uikit');
 
         if (!$this->app->runningInConsole()) {
             return;
