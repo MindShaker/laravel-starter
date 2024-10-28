@@ -3,6 +3,7 @@
 namespace Mindshaker\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -10,8 +11,14 @@ use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 
-class InstallCommand extends Command
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\select;
+
+#[AsCommand(name: 'starter:install')]
+class InstallCommand extends Command implements PromptsForMissingInput
 {
     use InstallUiKit;
 
@@ -20,9 +27,10 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'uikit:install
-        {--inertia : If you want to install Breeze with Inertia.js (React) or Blade (default)}
+    protected $signature = 'starter:install {stack : If you want to install Breeze with Inertia.js (React) or Blade (default)}
+        {uikit : If you want to install UiKit scaffolding}
         {--debugbar : If you want to install Debugbar}
+        {--ide-helper : If you want to install IDE Helper}
         {--robots : If you want to install Robots.txt}
         {--composer=global : Absolute path to the Composer binary which should be used to install packages}';
 
@@ -41,24 +49,111 @@ class InstallCommand extends Command
     public function handle()
     {
         $this->line('');
-        $this->components->info('Start installing UiKit scaffolding...');
-        return $this->installUikit();
+
+        $this->installDebugBar();
+
+        $this->installIdeHelper();
+
+        $this->installRobots();
+
+        $this->installBreeze();
+
+        if ($this->argument('uikit')) {
+            return $this->installUikit();
+        } else {
+            $this->installTailwind();
+        }
+    }
+
+    protected function installBreeze()
+    {
+        $this->components->info('Require Breeze scaffolding...');
+        if (!$this->requireComposerPackages(['laravel/breeze'], true)) {
+            return 1;
+        }
+
+        $this->components->info('Installing Breeze...');
+        if ($this->argument('stack') === 'react') {
+            $this->runCommands(['php artisan breeze:install react']);
+        } else {
+            $this->runCommands(['php artisan breeze:install blade']);
+        }
+    }
+
+    protected function installTailwind()
+    {
+        copy(__DIR__ . '/../../tailwind.config.js', base_path('tailwind.config.js'));
+    }
+
+    protected function installDebugBar()
+    {
+        if ($this->option('debugbar')) {
+            $this->components->info('Installing Debugbar...');
+            if (!$this->requireComposerPackages(['barryvdh/laravel-debugbar'], true)) {
+                return 1;
+            }
+        }
+    }
+
+    protected function installIdeHelper()
+    {
+        if ($this->option('ide-helper')) {
+            $this->components->info('Installing IDE Helper...');
+            if (!$this->requireComposerPackages(['barryvdh/laravel-ide-helper'], true)) {
+                return 1;
+            }
+
+            $this->runCommands(['php artisan ide-helper:generate']);
+        }
+    }
+
+    protected function installRobots()
+    {
+        $this->components->info('Installing Robots.txt...');
+        if ($this->option('robots')) {
+            copy(__DIR__ . '/../../robots.txt', base_path('public/robots.txt'));
+        }
+    }
+
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     *
+     * @return array
+     */
+    protected function promptForMissingArgumentsUsing()
+    {
+        return [
+            'uikit' => fn() => confirm('Would you like to install UiKit scaffolding?'),
+            'stack' => fn() => select(
+                label: 'Which stack would you like to install?',
+                options: ['inertia', 'blade'],
+                default: 'blade'
+            ),
+        ];
     }
 
     /**
-     * Interact with the user to prompt them when the stack argument is missing.
+     * Interact further with the user if they were prompted for missing arguments.
      *
-     * @param  \Symfony\Component\Console\Input\InputInterface  $input
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
      * @return void
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output)
     {
-        $input->setOption('inertia', $this->components->confirm('Would you like to install Inertia.js (React)?'));
+        $input->setOption('debugbar', confirm(
+            label: 'Would you like to install Debugbar?',
+            default: true
+        ));
 
-        $input->setOption('debugbar', $this->components->confirm('Would you like to install Debugbar and IDE Helper (Recommended for database heavy projects)?'));
+        $input->setOption('ide-helper', confirm(
+            label: 'Would you like to install IDE Helper?',
+            default: true
+        ));
 
-        $input->setOption('robots', $this->components->confirm('Would you like to install robots.txt (It will disallow google to crawl your site )?'));
+        $input->setOption('robots', confirm(
+            label: 'Would you like to prevent indexing?',
+            default: true
+        ));
     }
 
 

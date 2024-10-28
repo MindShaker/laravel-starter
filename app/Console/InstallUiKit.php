@@ -13,33 +13,7 @@ trait InstallUiKit
      */
     protected function installUikit()
     {
-
         $this->line('');
-        $this->components->info('Require Breeze scaffolding...');
-        if (!$this->requireComposerPackages(['laravel/breeze'], true)) {
-            return 1;
-        }
-
-        $this->components->info('Installing Breeze...');
-        if ($this->option('inertia')) {
-            $this->runCommands(['php artisan breeze:install react']);
-        } else {
-            $this->runCommands(['php artisan breeze:install blade']);
-        }
-
-        if ($this->option('debugbar')) {
-            $this->components->info('Installing Debugbar...');
-            if (!$this->requireComposerPackages(['barryvdh/laravel-debugbar', 'barryvdh/laravel-ide-helper'], true)) {
-                return 1;
-            }
-
-            if (!$this->requireComposerPackages(['barryvdh/laravel-ide-helper'], true)) {
-                return 1;
-            }
-
-            $this->runCommands(['php artisan ide-helper:generate']);
-        }
-
         // NPM Packages...
         $this->updateNodePackages(function ($packages) {
             unset($packages['alpinejs']);
@@ -60,9 +34,7 @@ trait InstallUiKit
         (new Filesystem)->ensureDirectoryExists(resource_path('sass'));
 
         //Copy files
-        if ($this->option('robots')) {
-            copy(__DIR__ . '/../../robots.txt', base_path('public/robots.txt'));
-        }
+
         copy(__DIR__ . '/../../resources/sass/app.scss', resource_path('sass/app.scss'));
 
 
@@ -70,7 +42,7 @@ trait InstallUiKit
         //auth
         //layouts
 
-        if ($this->option('inertia')) {
+        if ($this->argument('stack') === 'react') {
             //Install Inertia
             $this->installInertia();
         } else {
@@ -137,7 +109,7 @@ trait InstallUiKit
         $this->deleteFile((string) base_path('postcss.config.js'));
         $this->deleteFile((string) base_path('tailwind.config.js'));
 
-        if ($this->option('inertia')) {
+        if ($this->argument('stack') === 'react') {
             $this->deleteFile((string) resource_path('js/Components/DangerButton.jsx'));
             $this->deleteFile((string) resource_path('js/Components/InputLabel.jsx'));
             $this->deleteFile((string) resource_path('js/Components/NavLink.jsx'));

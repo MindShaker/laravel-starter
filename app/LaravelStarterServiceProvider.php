@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
 
-class LaravelUikitServiceProvider extends ServiceProvider
+class LaravelStarterServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
@@ -30,11 +30,6 @@ class LaravelUikitServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         Paginator::defaultView('pagination.uikit');
 
-        //Routes
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'laravel-uikit');
-
         if (!$this->app->runningInConsole()) {
             return;
         }
@@ -42,5 +37,15 @@ class LaravelUikitServiceProvider extends ServiceProvider
         $this->commands([
             Console\InstallCommand::class,
         ]);
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        return [Console\InstallCommand::class];
     }
 }

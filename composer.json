@@ -1,5 +1,5 @@
 {
-    "name": "mindshaker/laravel-uikit",
+    "name": "mindshaker/laravel-starter",
     "description": "UIkit starter template for Laravel 10",
     "minimum-stability": "stable",
     "keywords": [
@@ -25,7 +25,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mindshaker\\LaravelUikitServiceProvider"
+                "Mindshaker\\LaravelStarterServiceProvider"
             ]
         }
     },
